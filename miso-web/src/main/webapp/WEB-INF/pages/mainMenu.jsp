@@ -21,9 +21,8 @@
   ~
   ~ **********************************************************************
   --%>
-<link rel="stylesheet" href="<c:url value='/scripts/jquery/datatables/css/jquery.dataTables.css'/>" type="text/css">
-<link rel="stylesheet" href="<c:url value='/scripts/jquery/datatables/css/jquery.dataTables_themeroller.css'/>">
 <div id="maincontent">
+<%@ include file="adminsub.jsp" %>
     <div id="contentcolumn">
         <h1>Dashboard</h1>
 
@@ -38,6 +37,4 @@
         <miso:tiles-ajax id="tiles_run" target="run"/>
     </div>
 </div>
-<%@ include file="adminsub.jsp" %>
-
 <%@ include file="../footer.jsp" %>

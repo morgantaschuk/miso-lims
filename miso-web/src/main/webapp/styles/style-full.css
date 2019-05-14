@@ -399,7 +399,6 @@ table.containerSummary td.partitionOccupied {
 }
 
 #contentcolumn {
-    margin-left: 215px;
 }
 
 #subcontent {
@@ -408,7 +407,6 @@ table.containerSummary td.partitionOccupied {
     border-left: 1px solid lightgray;
     border-right: 1px solid darkgray;
     float: left;
-    margin-left: -100%;
     padding: 5px 5px 5px 10px;
 }
 
