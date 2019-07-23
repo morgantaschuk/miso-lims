@@ -1,5 +1,7 @@
 package uk.ac.bbsrc.tgac.miso.webapp.controller;
 
+import static uk.ac.bbsrc.tgac.miso.core.util.LimsUtils.getShortestIndexLength;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -90,10 +92,11 @@ public class IndexDistanceToolController {
   public @ResponseBody Set<IndexDistanceWarningDto> checkIndices(@RequestBody IndexDistanceRequestDto requestObject) {
     List<String> indices = requestObject.getIndices();
     Set<IndexDistanceWarningDto> results = new HashSet<>();
+    int min = getShortestIndexLength(indices);
 
     for (int i = 0; i < indices.size(); i++) {
       for (int j = i+1; j < indices.size(); j++) {
-        int editDistance = Index.checkEditDistance(indices.get(i), indices.get(j));
+        int editDistance = Index.checkEditDistance(indices.get(i), indices.get(j), min);
         if (editDistance < requestObject.getMinimumDistance()) {
           results.add(new IndexDistanceWarningDto(indices.get(i), indices.get(j), editDistance));
         }
@@ -102,5 +105,6 @@ public class IndexDistanceToolController {
 
     return results;
   }
+
 
 }

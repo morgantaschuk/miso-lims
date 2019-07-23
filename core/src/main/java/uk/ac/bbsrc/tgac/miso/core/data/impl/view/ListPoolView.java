@@ -1,5 +1,7 @@
 package uk.ac.bbsrc.tgac.miso.core.data.impl.view;
 
+import static uk.ac.bbsrc.tgac.miso.core.util.LimsUtils.*;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -253,28 +255,31 @@ public class ListPoolView implements Aliasable, Nameable, Serializable, Timestam
   }
 
   public Set<String> getDuplicateIndicesSequences() {
-    return getIndexSequencesWithMinimumEditDistance(1);
+    return getIndexSequencesWithMinimumEditDistance(DUPLICATE_INDICES_MINIMUM_EDIT_DISTANCE);
   }
 
   public Set<String> getNearDuplicateIndicesSequences() {
-    return getIndexSequencesWithMinimumEditDistance(3);
+    return getIndexSequencesWithMinimumEditDistance(NEAR_DUPLICATE_INDICES_MINIMUM_EDIT_DISTANCE);
   }
 
   private Set<String> getIndexSequencesWithMinimumEditDistance(int minimumDistance) {
     Set<String> sequences = new HashSet<>();
     List<ListPoolViewElement> elements = getElements();
-    if (minimumDistance > 1 && elements.stream().allMatch(ListPoolView::hasFakeSequence)) return Collections.emptySet();
-    for (int i = 0; i < elements.size(); i++) {
-      String sequence1 = getCombinedIndexSequences(elements.get(i));
+    if (minimumDistance > DUPLICATE_INDICES_MINIMUM_EDIT_DISTANCE && elements.stream().allMatch(ListPoolView::hasFakeSequence))
+      return Collections.emptySet();
+    List<String> indices = elements.stream().map(view -> flattenIndices(view.getIndices())).collect(Collectors.toList());
+    int shortestIndexLength = getShortestIndexLength(indices);
+    for (int i = 0; i < indices.size(); i++) {
+      String sequence1 = indices.get(i);
       if (sequence1.length() == 0) {
         continue;
       }
-      for (int j = i + 1; j < elements.size(); j++) {
-        String sequence2 = getCombinedIndexSequences(elements.get(j));
+      for (int j = i + 1; j < indices.size(); j++) {
+        String sequence2 = indices.get(j);
         if (sequence2.length() == 0 || !isCheckNecessary(elements.get(i), elements.get(j), minimumDistance)) {
           continue;
         }
-        if (Index.checkEditDistance(sequence1, sequence2) < minimumDistance) {
+        if (Index.checkEditDistance(sequence1, sequence2, shortestIndexLength) < minimumDistance) {
           sequences.add(sequence1);
           sequences.add(sequence2);
         }
@@ -291,7 +296,8 @@ public class ListPoolView implements Aliasable, Nameable, Serializable, Timestam
 
   private static boolean isCheckNecessary(ListPoolViewElement element1, ListPoolViewElement element2, int minimumDistance) {
     return !((hasFakeSequence(element1) || hasFakeSequence(element2))
-        && (minimumDistance > 1 || getCombinedIndexSequences(element1).length() != getCombinedIndexSequences(element2).length()));
+        && (minimumDistance > DUPLICATE_INDICES_MINIMUM_EDIT_DISTANCE
+            || getCombinedIndexSequences(element1).length() != getCombinedIndexSequences(element2).length()));
   }
 
   private static String getCombinedIndexSequences(ListPoolViewElement element) {

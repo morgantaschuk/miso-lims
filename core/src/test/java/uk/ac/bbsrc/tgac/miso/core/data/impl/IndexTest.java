@@ -10,27 +10,27 @@ public class IndexTest {
 
   @Test
   public void testCheckEditDistanceDuplicate() {
-    assertEquals(0, Index.checkEditDistance("ABCDEFGH", "ABCDEFGH"));
+    assertEquals(0, Index.checkEditDistance("ABCDEFGH", "ABCDEFGH", "ABCDEFGH".length()));
   }
 
   @Test
   public void testCheckEditDistanceDuplicateDifferentLength() {
-    assertEquals(0, Index.checkEditDistance("ABCDEFGH", "ABCDEFGHIJKL"));
+    assertEquals(0, Index.checkEditDistance("ABCDEFGH", "ABCDEFGHIJKL", "ABCDEFGH".length()));
   }
 
   @Test
   public void testCheckEditDistance1Diff() {
-    assertEquals(1, Index.checkEditDistance("ABCDEFGH", "ABCDEFGG"));
+    assertEquals(1, Index.checkEditDistance("ABCDEFGH", "ABCDEFGG", "ABCDEFGH".length()));
   }
 
   @Test
   public void testCheckEditDistance1DiffDifferentLength() {
-    assertEquals(1, Index.checkEditDistance("ABCDEFGH", "ABCDEFGGIJKL"));
+    assertEquals(1, Index.checkEditDistance("ABCDEFGH", "ABCDEFGGIJKL", "ABCDEFGH".length()));
   }
 
   @Test
   public void testCheckEditDistance2Diff() {
-    assertEquals(2, Index.checkEditDistance("ABCDEFGH", "ABCDEFFF"));
+    assertEquals(2, Index.checkEditDistance("ABCDEFGH", "ABCDEFFF", "ABCDEFGH".length()));
   }
 
 }

@@ -23,7 +23,7 @@
 
 package uk.ac.bbsrc.tgac.miso.core.data.impl;
 
-import static uk.ac.bbsrc.tgac.miso.core.util.LimsUtils.nullifyStringIfBlank;
+import static uk.ac.bbsrc.tgac.miso.core.util.LimsUtils.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -332,29 +332,32 @@ public class PoolImpl extends AbstractBoxable implements Pool {
 
   @Override
   public Set<String> getDuplicateIndicesSequences() {
-    return getIndexSequencesWithMinimumEditDistance(1);
+    return getIndexSequencesWithMinimumEditDistance(DUPLICATE_INDICES_MINIMUM_EDIT_DISTANCE);
   }
 
   @Override
   public Set<String> getNearDuplicateIndicesSequences() {
-    return getIndexSequencesWithMinimumEditDistance(3);
+    return getIndexSequencesWithMinimumEditDistance(NEAR_DUPLICATE_INDICES_MINIMUM_EDIT_DISTANCE);
   }
 
   private Set<String> getIndexSequencesWithMinimumEditDistance(int minimumDistance) {
     Set<String> sequences = new HashSet<>();
     List<PoolableElementView> views = getPoolContents().stream().map(PoolElement::getPoolableElementView).collect(Collectors.toList());
-    if (minimumDistance > 1 && views.stream().allMatch(PoolImpl::hasFakeSequence)) return Collections.emptySet();
-    for (int i = 0; i < views.size(); i++) {
-      String sequence1 = getCombinedIndexSequences(views.get(i));
+    if (minimumDistance > DUPLICATE_INDICES_MINIMUM_EDIT_DISTANCE && views.stream().allMatch(PoolImpl::hasFakeSequence))
+      return Collections.emptySet();
+    List<String> indices = views.stream().map(view -> flattenIndices(view.getIndices())).collect(Collectors.toList());
+    int shortestIndexLength = getShortestIndexLength(indices);
+    for (int i = 0; i < indices.size(); i++) {
+      String sequence1 = indices.get(i);
       if (sequence1.length() == 0) {
         continue;
       }
-      for (int j = i + 1; j < views.size(); j++) {
-        String sequence2 = getCombinedIndexSequences(views.get(j));
+      for (int j = i + 1; j < indices.size(); j++) {
+        String sequence2 = indices.get(j);
         if (sequence2.length() == 0 || !isCheckNecessary(views.get(i), views.get(j), minimumDistance)) {
           continue;
         }
-        if (Index.checkEditDistance(sequence1, sequence2) < minimumDistance) {
+        if (Index.checkEditDistance(sequence1, sequence2, shortestIndexLength) < minimumDistance) {
           sequences.add(sequence1);
           sequences.add(sequence2);
         }
@@ -365,14 +368,8 @@ public class PoolImpl extends AbstractBoxable implements Pool {
 
   private static boolean isCheckNecessary(PoolableElementView view1, PoolableElementView view2, int minimumDistance) {
     return !((hasFakeSequence(view1) || hasFakeSequence(view2))
-        && (minimumDistance > 1 || getCombinedIndexSequences(view1).length() != getCombinedIndexSequences(view2).length()));
-  }
-
-  private static String getCombinedIndexSequences(PoolableElementView view) {
-    return view.getIndices().stream()
-        .sorted((i1, i2) -> Integer.compare(i1.getPosition(), i2.getPosition()))
-        .map(Index::getSequence)
-        .collect(Collectors.joining());
+        && (minimumDistance > DUPLICATE_INDICES_MINIMUM_EDIT_DISTANCE
+            || flattenIndices(view1.getIndices()).length() != flattenIndices(view2.getIndices()).length()));
   }
 
   private static boolean hasFakeSequence(PoolableElementView view) {

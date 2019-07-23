@@ -54,6 +54,7 @@ import uk.ac.bbsrc.tgac.miso.core.data.ConcentrationUnit;
 import uk.ac.bbsrc.tgac.miso.core.data.DetailedLibrary;
 import uk.ac.bbsrc.tgac.miso.core.data.DetailedSample;
 import uk.ac.bbsrc.tgac.miso.core.data.IlluminaRun;
+import uk.ac.bbsrc.tgac.miso.core.data.Index;
 import uk.ac.bbsrc.tgac.miso.core.data.LS454Run;
 import uk.ac.bbsrc.tgac.miso.core.data.Library;
 import uk.ac.bbsrc.tgac.miso.core.data.Nameable;
@@ -519,4 +520,32 @@ public class LimsUtils {
     return (commonPrefix.length() > 0) ? commonPrefix.toString() : null;
 
   }
+
+  public static String truncate(String index, int shortestLength) {
+    return index.substring(0, shortestLength);
+  }
+
+  public static int getShortestIndexLength(Collection<String> indices) {
+    String initialValue = "REALLY_LONG_VALUE_THAT_WILL_SURELY_GET_REPLACED_BUT_HERE_ARE_SOME_MORE_CHARACTERS_JUST_IN_CASE";
+    String shortestIndex = indices.stream()
+        .reduce(initialValue, (shortest, current) -> {
+          if (current != null && current.length() > 0 && current.length() < shortest.length()) return current;
+          return shortest;
+        });
+    if (shortestIndex == null || initialValue.equals(shortestIndex)) return 0;
+    return shortestIndex.length();
+  }
+
+  public static String flattenIndices(List<Index> indices) {
+    return indices.stream()
+        .sorted((i1, i2) -> Integer.compare(i1.getPosition(), i2.getPosition()))
+        .map(Index::getSequence)
+        .collect(Collectors.joining());
+  }
+
+  // Fewer index base mismatches than this will cause unrecoverable duplicate indices.
+  // Demultiplexing on bcl2fastq can happen with "mismatches 0" if indices have at least 2 edit distance.
+  public static int DUPLICATE_INDICES_MINIMUM_EDIT_DISTANCE = 2;
+  // Fewer index base mismatches than this will cause duplicate or near-duplicate indices.
+  public static int NEAR_DUPLICATE_INDICES_MINIMUM_EDIT_DISTANCE = 3;
 }

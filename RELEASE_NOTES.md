@@ -1,5 +1,11 @@
 # Unreleased
 
+  * Index distance check now truncates each index to the length of the shortest index in the
+    pool.
+    * Indices with 0 and 1 mismatches are considered duplicates (previously, only 0 mismatches
+    were considered duplicates)
+    * Indices with 2 mismatches are still considered near-duplicates.
+    * This may result in more duplicate indices warnings for pools of mixed-length indices.
   * Fixed bug that broke List Freezers page
   * Show _Assignee_ column in _Issue_ tables
 

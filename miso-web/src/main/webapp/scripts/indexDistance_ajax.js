@@ -43,7 +43,7 @@
         } else {
           $.each(data, function(index, item) {
             results += (item.editDistance === 0) ? 'Duplicate' : 'Near match (' + item.editDistance + ')';
-            results += ': ' + item.indices.join(', ') + '\n';
+            results += ': "' + item.indices.join('", "') + '"\n';
           });
           showError(results);
         }
